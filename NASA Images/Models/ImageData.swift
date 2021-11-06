@@ -27,11 +27,11 @@ struct Item: Decodable {
 
 //Forth Level
 struct BasicInfoData: Decodable {
-    let center: String //Detail
+    let center: String? //Detail
     let title: String //Detail
     let nasa_id: String //Detail
     let date_created: String //Detail
-    let keywords: [String] //Detail
+    let keywords: [String]? //Detail
     let description_508: String? //Detail
 }
 
