@@ -16,27 +16,26 @@ struct ImageData: Decodable {
 
 //Second Level
 struct ImageCollection: Decodable {
-    let items: [Item]? //The items array could be empty (ex. Search for the term: "eart")
+    let items: [ImageItem]? //The items array could be empty (ex. Search for the term: "eart")
 }
 
 //Third Level
-struct Item: Decodable {
+struct ImageItem: Decodable {
     let data: [BasicInfoData]
     let links: [ImageLink]
 }
 
 //Forth Level
 struct BasicInfoData: Decodable {
-    let center: String? //Detail
-    let title: String //Detail
-    let nasa_id: String //Detail
-    let date_created: String //Detail
-    let keywords: [String]? //Detail
-    let description_508: String? //Detail
+    let center: String?
+    let title: String
+    let nasa_id: String
+    let date_created: String
+    let description_508: String?
 }
 
 struct ImageLink: Decodable {
-    let href: String //Detail
+    let href: String
 }
 
 

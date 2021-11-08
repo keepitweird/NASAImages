@@ -8,4 +8,5 @@
 struct K {
     static let cellIdentifier = "ReusableCell"
     static let cellNibName = "ImageCell"
+    static let segueIdentifier = "ImageToDetail"
 }

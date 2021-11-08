@@ -9,7 +9,6 @@ import UIKit
 
 protocol NetworkManagerDelegate {
     func didUpdateNASA(_ networkManager: NetworkManager, imageData: ImageData)
-    //func didUpdateImage(_ networkManager: NetworkManager, image: UIImage)
     func didFailWithError(_ networkManager: NetworkManager, error: Error)
 }
 
@@ -23,7 +22,7 @@ struct NetworkManager {
         let urlString = baseURL + "&q=\(searchTerm)"
         if let url = URL(string: urlString) {
             let session = URLSession(configuration: .default)
-            let task = session.dataTask(with: url) { data, _, error in
+            let task = session.dataTask(with: url) { data, response, error in
                 if error == nil {
                     if let safeData = data {
                         //let dataString = String(data: safeData, encoding: .utf8)

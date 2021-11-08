@@ -13,19 +13,15 @@ class ImageCell: UITableViewCell {
     @IBOutlet weak var title: UILabel!
     @IBOutlet weak var date: UILabel!
     
-    var imageWidthRatio: CGFloat?
-    
     override func awakeFromNib() {
         super.awakeFromNib()
-        //nasaImageView.frame.size.height = nasaImageView.frame.size.width / nasaImageView.getCropRatio()
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-        // Configure the view for the selected state
     }
     
-    override func prepareForReuse() { //Does it matter?
+    override func prepareForReuse() {
         super.prepareForReuse()
         nasaImageView.image = nil
     }
@@ -38,10 +34,8 @@ class ImageCell: UITableViewCell {
                     if let image = UIImage(data: safeData) {
                         DispatchQueue.main.async {
                             self.nasaImageView.image = image
-                            self.imageWidthRatio = image.size.height / image.size.width
                         }
                     }
-                    //print("Got image!")
                 } else {
                     print(error!)
                 }
