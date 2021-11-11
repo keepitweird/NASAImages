@@ -7,6 +7,8 @@
 
 struct K {
     static let cellIdentifier = "ReusableCell"
-    static let cellNibName = "ImageCell"
+    static let cellNibName = "NasaImageCell"
     static let segueIdentifier = "ImageToDetail"
+    static let darkGrayColor = "darkGrayColor"
+    static let networkErrorIcon = "wifi.exclamationmark"
 }

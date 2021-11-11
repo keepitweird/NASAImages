@@ -7,20 +7,20 @@
 
 import Foundation
 
-//API call: https://images-api.nasa.gov/search?media_type=image&q=earth
+//API call example: https://images-api.nasa.gov/search?media_type=image&q=earth
 
 //First Level
-struct ImageData: Decodable {
+struct NasaImageData: Decodable {
     let collection: ImageCollection
 }
 
 //Second Level
 struct ImageCollection: Decodable {
-    let items: [ImageItem]? //The items array could be empty (ex. Search for the term: "eart")
+    let items: [NasaImageItem]? //The items array could be empty (ex. Search for the term: "eart")
 }
 
 //Third Level
-struct ImageItem: Decodable {
+struct NasaImageItem: Decodable {
     let data: [BasicInfoData]
     let links: [ImageLink]
 }

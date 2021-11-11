@@ -12,17 +12,23 @@ class ImageViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
     
-    var networkManager = NetworkManager()
-    var imageItems: [ImageItem] = []
-    var randomSearchTerms = ["Earth","Sun","Mars","Rocket","Ship","Andromeda","Space","Alien","Ablation","Accretion","Achondrite","Albedo","Altitude","Antimatter","Apastron","Aperture","Aphelion","Apogee","Asteroid","Astrochemistry","Atmosphere","Aurora","Axis","Azimuth","Blueshift","Bolide","Caldera","Catena","Cavus","Chaos","Chasma","Chondrite","Chondrule","Chromosphere","Coma","Comet","Conjunction","Constellation","Corona","Cosmogony","Cosmology","Crater","Declination","Density","Disk","Eccentricity","Eclipse","Ecliptic","Ejecta","Ellipse","Elongation","Ephemeris","Equinox","Extinction","Extragalactic","Extraterrestrial","Eyepiece","Faculae","Filament","Finder","Fireball","Galaxy","Granulation","Gravity","Heliopause","Heliosphere","Hydrogen","Hypergalaxy","Ice","Inclination","Ionosphere","Jansky","Jet","Kelvin","Kiloparsec","Libration","Limb","Lunation","Mare","Mass","Matter","Meridian","Metal","Meteor","Meteorite","Meteoroid","Millibar","Nadir","Nebula","Neutrino","Nova","Obliquity","Oblateness","Occultation","Opposition","Orbit","Parallax","Parsec","Patera","Penumbra","Perigee","Perihelion","Perturb","Phase","Photon","Planemo","Planet","Planitia","Planum","Plasma","Precession","Prominence","Protostar","Pulsar","Quadrature","Quasar","Radiant","Radiation","Redshift","Resonance","Rotation","Satellite","Scarp","Sidereal","Singularity","Solstice","Spectrometer","Spectroscopy","Spectrum","Spicules","Star","Sunspot","Supergiant","Supermoon","Supernova","Tektite","Telescope","Terminator","Terrestrial","Transit","Trojan","Ultraviolet","Umbra","Wavelength","X-ray","Zenith","Zodiac"]
+    private var networkManager = NetworkManager()
+    private var nasaImageItems: [NasaImageItem] = []
+    private lazy var session: URLSession = {
+        URLCache.shared.memoryCapacity = 512 * 1024 * 1024 //Set in-memory cache to 512 MB
+        let configuration = URLSessionConfiguration.default
+        configuration.requestCachePolicy = .returnCacheDataElseLoad
+        return URLSession(configuration: configuration)
+    }()
+    private var randomSearchTerms = ["Milky Way","Black Hole","Earth","Sun","Mars","Rocket","Ship","Andromeda","Space","Alien","Ablation","Accretion","Achondrite","Albedo","Altitude","Antimatter","Apastron","Aperture","Aphelion","Apogee","Asteroid","Astrochemistry","Atmosphere","Aurora","Axis","Azimuth","Blueshift","Bolide","Caldera","Catena","Cavus","Chaos","Chasma","Chondrite","Chondrule","Chromosphere","Coma","Comet","Conjunction","Constellation","Corona","Cosmogony","Cosmology","Crater","Declination","Density","Disk","Eccentricity","Eclipse","Ecliptic","Ejecta","Ellipse","Elongation","Ephemeris","Equinox","Extinction","Extragalactic","Extraterrestrial","Eyepiece","Faculae","Filament","Finder","Fireball","Galaxy","Granulation","Gravity","Heliopause","Heliosphere","Hydrogen","Hypergalaxy","Ice","Inclination","Ionosphere","Jansky","Jet","Kelvin","Kiloparsec","Libration","Limb","Lunation","Mare","Mass","Matter","Meridian","Metal","Meteor","Meteorite","Meteoroid","Millibar","Nadir","Nebula","Neutrino","Nova","Obliquity","Oblateness","Occultation","Opposition","Orbit","Parallax","Parsec","Patera","Penumbra","Perigee","Perihelion","Perturb","Phase","Photon","Planemo","Planet","Planitia","Planum","Plasma","Precession","Prominence","Protostar","Pulsar","Quadrature","Quasar","Radiant","Radiation","Redshift","Resonance","Rotation","Satellite","Scarp","Sidereal","Singularity","Solstice","Spectrometer","Spectroscopy","Spectrum","Spicules","Star","Sunspot","Supergiant","Supermoon","Supernova","Tektite","Telescope","Terminator","Terrestrial","Transit","Trojan","Ultraviolet","Umbra","Wavelength","X-ray","Zenith","Zodiac"]
     
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.isNavigationBarHidden = true
         
-        //Fix the black bar tint color bug in Navigation bar (available iOS 13 or later)
+        //Fix the black bar tint color bug in Navigation bar
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(red: 0.18, green: 0.18, blue: 0.16, alpha: 1.00)  //
+        appearance.backgroundColor = UIColor(named: K.darkGrayColor)
         appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
 
         let buttonAppearance = UIBarButtonItemAppearance()
@@ -48,16 +54,15 @@ class ImageViewController: UIViewController {
         searchBar.delegate = self
         networkManager.delegate = self
         
-        //Search for a random search term when the view is loaded
-        didPullToRefresh()
-        
         //Pull to refresh
         tableView.refreshControl = UIRefreshControl()
-        tableView.refreshControl?.addTarget(self, action: #selector(didPullToRefresh), for: .valueChanged)
+        tableView.refreshControl?.addTarget(self, action: #selector(fetchRandomSearchTerm), for: .valueChanged)
+        
+        fetchRandomSearchTerm()
     }
     
-    @objc func didPullToRefresh() {
-        //Fetch data from random astronomy search term
+    //Fetch data from a random astronomy search term
+    @objc func fetchRandomSearchTerm() {
         let randomSearchTerm = randomSearchTerms.randomElement()
         self.networkManager.performRequest(with: randomSearchTerm!)
         searchBar.text = randomSearchTerm
@@ -68,6 +73,7 @@ class ImageViewController: UIViewController {
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
+    
 }
 
 
@@ -79,6 +85,7 @@ extension ImageViewController: UISearchBarDelegate {
         if let searchTerm = searchBar.text {
             self.networkManager.performRequest(with: searchTerm)
         }
+        self.tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
     }
 
 }
@@ -88,7 +95,7 @@ extension ImageViewController: UISearchBarDelegate {
 extension ImageViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let imageItemsCount = imageItems.count
+        let imageItemsCount = nasaImageItems.count
         if imageItemsCount == 0 {
             return 1
         } else {
@@ -98,38 +105,42 @@ extension ImageViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-        let cell = tableView.dequeueReusableCell(withIdentifier: K.cellIdentifier, for: indexPath) as! ImageCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: K.cellIdentifier, for: indexPath) as! NasaImageCell
 
-        if imageItems.count == 0 {
+        if nasaImageItems.count == 0 {
             cell.title.text = "No result"
             cell.title.textAlignment = .center
             cell.date.text = ""
             tableView.separatorColor = .black
         } else {
-            cell.fetchPhoto(with: imageItems[indexPath.row].links[0].href)
-            cell.title.text = imageItems[indexPath.row].data[0].title
+            cell.fetchPhoto(with: nasaImageItems[indexPath.row].links[0].href, session: session)
+            cell.title.text = nasaImageItems[indexPath.row].data[0].title
             cell.title.textAlignment = .left
-            cell.date.text = String(imageItems[indexPath.row].data[0].date_created.prefix(10))
+            cell.date.text = String(nasaImageItems[indexPath.row].data[0].date_created.prefix(10))
             tableView.separatorColor = .lightGray
         }
         
         //Change selected cell color to dark gray
         let backgroundView = UIView()
-        backgroundView.backgroundColor = UIColor(red: 0.18, green: 0.18, blue: 0.16, alpha: 1.00)
+        backgroundView.backgroundColor = UIColor(named: K.darkGrayColor)
         cell.selectedBackgroundView = backgroundView
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: K.segueIdentifier, sender: self)
+        if nasaImageItems.count != 0 {
+            performSegue(withIdentifier: K.segueIdentifier, sender: self)
+        } else {
+            tableView.deselectRow(at: indexPath, animated: true) //"No result" cell will get deselected (change cell color back)
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == K.segueIdentifier {
             let destinationVC = segue.destination as! DetailViewController
             if let indexPath = tableView.indexPathForSelectedRow {
-                let imageItem = self.imageItems[indexPath.row]
+                let imageItem = self.nasaImageItems[indexPath.row]
                 destinationVC.center = imageItem.data[0].center
                 destinationVC.titleImage = imageItem.data[0].title
                 destinationVC.nasa_id = imageItem.data[0].nasa_id
@@ -146,19 +157,27 @@ extension ImageViewController: UITableViewDataSource, UITableViewDelegate {
 //MARK: - NetworkManagerDelegate
 extension ImageViewController: NetworkManagerDelegate {
 
-    func didUpdateNASA(_ networkManager: NetworkManager, imageData: ImageData) {
+    func didUpdateNASA(_ networkManager: NetworkManager, imageData: NasaImageData) {
         DispatchQueue.main.async {
-            self.imageItems = imageData.collection.items ?? []
+            self.nasaImageItems = imageData.collection.items ?? []
             self.tableView.refreshControl?.endRefreshing() //We're done updating; it can stop spinning
             self.tableView.reloadData()
-            print("Image Count: \(self.imageItems.count)")
-            //print(self.imageData?.collection.items[0].data[0].title)
-            //print(self.imageItems[0].links[0].href)
+            print("Image Count: \(self.nasaImageItems.count)")
         }
     }
     
     func didFailWithError(_ networkManager: NetworkManager, error: Error) {
         print(error)
+        
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Network Error", message: "Please try again later.", preferredStyle: .alert)
+            let action = UIAlertAction(title: "Okay", style: .default) { (action) in
+                self.nasaImageItems = []
+                self.tableView.reloadData()
+            }
+            alert.addAction(action)
+            self.present(alert, animated: true, completion: nil)
+        }
     }
     
 }

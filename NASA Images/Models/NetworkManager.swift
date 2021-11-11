@@ -8,10 +8,9 @@
 import UIKit
 
 protocol NetworkManagerDelegate {
-    func didUpdateNASA(_ networkManager: NetworkManager, imageData: ImageData)
+    func didUpdateNASA(_ networkManager: NetworkManager, imageData: NasaImageData)
     func didFailWithError(_ networkManager: NetworkManager, error: Error)
 }
-
 
 struct NetworkManager {
     
@@ -19,8 +18,9 @@ struct NetworkManager {
     let baseURL = "https://images-api.nasa.gov/search?media_type=image"
     
     func performRequest(with searchTerm: String) {
-        let urlString = baseURL + "&q=\(searchTerm)"
-        if let url = URL(string: urlString) {
+        let urlString = (baseURL + "&q=\(searchTerm)")
+            .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) //Allow spaces in search term
+        if let url = URL(string: urlString!) {
             let session = URLSession(configuration: .default)
             let task = session.dataTask(with: url) { data, response, error in
                 if error == nil {
@@ -40,10 +40,10 @@ struct NetworkManager {
         }
     }
     
-    func parseJSON(with imageData: Data) -> ImageData? {
+    func parseJSON(with imageData: Data) -> NasaImageData? {
         let decoder = JSONDecoder()
         do {
-            let decodedData = try decoder.decode(ImageData.self, from: imageData)
+            let decodedData = try decoder.decode(NasaImageData.self, from: imageData)
             //print(decodedData.collection.items[2].data[0].title)
             return decodedData
         } catch {
@@ -52,7 +52,5 @@ struct NetworkManager {
             return nil
         }
     }
-
-
     
 }

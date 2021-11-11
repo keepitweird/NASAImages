@@ -25,13 +25,12 @@ class DetailViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        centerLabel.text = "Center: " + (center ?? "Not specified")
-        titleLabel.text = "Title: " + (titleImage ?? "Not specified")
-        nasaIdLabel.text = "NASA ID: " + (nasa_id ?? "Not specified")
-        dateCreatedLabel.text = "Date Created: " + (date_created?.prefix(10) ?? "Not specified")
-        descriptionLabel.text = "Description: " + (description_508 ?? "Not specified")
+        titleLabel.attributedText = NSMutableAttributedString().bold("Title: ").normal(titleImage ?? "Not specified")
+        centerLabel.attributedText = NSMutableAttributedString().bold("Center: ").normal(center ?? "Not specified")
+        nasaIdLabel.attributedText = NSMutableAttributedString().bold("NASA ID: ").normal(nasa_id ?? "Not specified")
+        dateCreatedLabel.attributedText = NSMutableAttributedString().bold("Date Created: ").normal(String(date_created?.prefix(10) ?? "Not specified"))
+        descriptionLabel.attributedText = NSMutableAttributedString().bold("Description: ").normal(description_508 ?? "Not specified")
         fetchPhoto(with: href!)
-        //print("Photo URL: \(href!)")
     }
     
     //Set status bar color to white
@@ -53,8 +52,10 @@ class DetailViewController: UIViewController {
                             self.imageView.image = image
                         }
                     }
-                    //print("Got image!")
                 } else {
+                    DispatchQueue.main.async {
+                        self.imageView.image = UIImage(systemName: K.networkErrorIcon)
+                    }
                     print(error!)
                 }
             }
@@ -62,5 +63,26 @@ class DetailViewController: UIViewController {
         }
     }
     
+    
+}
+
+//MARK: - Making Text Bold
+extension NSMutableAttributedString {
+    
+    var fontSize: CGFloat { return 17 }
+    var boldFont: UIFont { return UIFont.boldSystemFont(ofSize: fontSize) }
+    var normalFont: UIFont { return UIFont.systemFont(ofSize: fontSize)}
+    
+    func bold(_ value:String) -> NSMutableAttributedString {
+        let attributes: [NSAttributedString.Key: Any] = [ .font: boldFont]
+        self.append( NSAttributedString(string: value, attributes: attributes) )
+        return self
+    }
+    
+    func normal(_ value:String) -> NSMutableAttributedString {
+        let attributes: [NSAttributedString.Key: Any] = [ .font: normalFont, ]
+        self.append( NSAttributedString(string: value, attributes: attributes) )
+        return self
+    }
     
 }
